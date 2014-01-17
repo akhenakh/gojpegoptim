@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stddef.h>
 #include <setjmp.h>
 #import "jpeglib.h"
 
@@ -96,10 +95,9 @@ int main() {
   rewind(fp);
 
   unsigned char *jpg_inputbuffer;
-  unsigned char *jpg_outputbuffer;
+  unsigned char *jpg_outputbuffer = NULL;
 
   jpg_inputbuffer = (unsigned char*) malloc(fsize + 100);
-  jpg_outputbuffer = (unsigned char*) malloc(fsize + 100);
   fread(jpg_inputbuffer, 1, fsize, fp);
   printf("input size: %lu\n", fsize);
   unsigned long ouputsize = 0;
@@ -109,15 +107,10 @@ int main() {
 
   FILE *fo;
   fo = fopen("output.jpg", "w");
-  int i = 0;
 
-  while(i<ouputsize){
-    fputc(*jpg_outputbuffer, fo);
-    jpg_outputbuffer++;
-    i++;
-  }
+  fwrite(jpg_outputbuffer, 1, ouputsize, fo);
 
   fclose(fo);
   free(jpg_inputbuffer);
-  //free(jpg_outputbuffer);
+  free(jpg_outputbuffer);
 }
