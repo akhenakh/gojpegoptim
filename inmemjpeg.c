@@ -117,9 +117,8 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
 
   printf("Proc: Image is %d by %d with %d components target quality:%d\n", 
       dinfo.output_width, dinfo.output_height,  dinfo.output_components, quality);
-
  
-  cinfo.optimize_coding = TRUE;
+  
 
   if (quality>-1 ) {
      jpeg_start_decompress(&dinfo);
@@ -161,11 +160,16 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   } else {
     coef_arrays = jpeg_read_coefficients(&dinfo);
     jpeg_copy_critical_parameters(&dinfo, &cinfo);
+    cinfo.optimize_coding = TRUE;
     jpeg_write_coefficients(&cinfo, coef_arrays);
   } 
 
   jpeg_finish_compress(&cinfo);
   jpeg_finish_decompress(&dinfo);
+  if (buf) {
+    for (j=0;j<dinfo.output_height;j++) free(buf[j]);
+    free(buf); buf=NULL;
+  }
 }
 
 int main() {
