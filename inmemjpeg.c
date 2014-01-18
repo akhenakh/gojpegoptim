@@ -73,13 +73,24 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   jcerr.pub.error_exit=my_error_exit;
   jcerr.pub.output_message=my_output_message;
 
+  /* setup error handling for decompress */
+  if (setjmp(jderr.setjmp_buffer)) {
+    jpeg_abort_decompress(&dinfo);
+    if (buf) {
+      for (j=0;j<dinfo.output_height;j++) free(buf[j]);
+      free(buf); buf=NULL;
+    }
+    printf(" [ERROR]\n");
+    return;
+   }
+
+  /* prepare to decompress */
+  global_error_counter=0;
+  
   jpeg_mem_src(&dinfo, inputbuffer, inputsize);
 
-  int rc = jpeg_read_header(&dinfo, TRUE);
-
-  if (rc != 1) {
-    printf("File does not seem to be a normal JPEG");
-    exit(EXIT_FAILURE);
+  if (jpeg_read_header(&dinfo, TRUE) != JPEG_HEADER_OK) {
+    return;
   }
 
   /* check for Exif/IPTC markers */
@@ -151,9 +162,7 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
     coef_arrays = jpeg_read_coefficients(&dinfo);
     jpeg_copy_critical_parameters(&dinfo, &cinfo);
     jpeg_write_coefficients(&cinfo, coef_arrays);
-  }
-
-  
+  } 
 
   jpeg_finish_compress(&cinfo);
   jpeg_finish_decompress(&dinfo);
@@ -180,7 +189,7 @@ int main() {
   fread(jpg_inputbuffer, 1, fsize, fp);
   printf("input size: %lu\n", fsize);
   unsigned long ouputsize = 0;
-  optimizeJPEG(jpg_inputbuffer, fsize, &jpg_outputbuffer, &ouputsize, 100);
+  optimizeJPEG(jpg_inputbuffer, fsize, &jpg_outputbuffer, &ouputsize, -1);
 
   fclose(fp);
   printf("output size: %lu\n", ouputsize);
