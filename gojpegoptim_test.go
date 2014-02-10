@@ -20,6 +20,18 @@ func TestJpegOptimFromBuffer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	gain := (len(fi) - len(imgBytes)) * 100 / len(fi)
+	t.Log("input size", len(fi), "output size", len(imgBytes), "gain", len(fi)-len(imgBytes), gain, "%")
+	if gain != 35 {
+		t.Fatal("Optimization failed")
+	}
+}
 
-	t.Log("input size", len(fi), "output size", len(imgBytes), "gain", len(fi)-len(imgBytes), (len(fi)-len(imgBytes))*100/len(fi), "%")
+func TestJpegOptimBadBuffer(t *testing.T) {
+	b := []byte{'g', 'o', 'l', 'a', 'n', 'g'}
+	_, err := EncodeOptimized(b, 100)
+	if err == nil {
+		t.Fatal("Should be detected as an error")
+	}
+
 }
