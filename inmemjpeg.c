@@ -23,9 +23,6 @@ struct my_error_mgr {
 typedef struct my_error_mgr * my_error_ptr;
 struct my_error_mgr jcerr, jderr;
 
-int verbose_mode = 1;
-int global_error_counter = 0;
-
 METHODDEF(void) 
 my_error_exit (j_common_ptr cinfo)
 {
@@ -40,8 +37,7 @@ my_output_message (j_common_ptr cinfo)
   char buffer[JMSG_LENGTH_MAX];
 
   (*cinfo->err->format_message) (cinfo, buffer); 
-  if (verbose_mode) printf(" (%s) ",buffer);
-  global_error_counter++;
+  printf("ici (%s) ",buffer);
 }
 
 // Take a buffer containing a jpeg and return an optimized jpeg
@@ -81,12 +77,11 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
       free(buf); buf=NULL;
     }
     printf(" [ERROR]\n");
+    outputsize = 0;
     return;
    }
 
-  /* prepare to decompress */
-  global_error_counter=0;
-  
+  /* prepare to decompress */  
   jpeg_mem_src(&dinfo, inputbuffer, inputsize);
 
   if (jpeg_read_header(&dinfo, TRUE) != JPEG_HEADER_OK) {
@@ -137,7 +132,23 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
        jpeg_read_scanlines(&dinfo,&buf[dinfo.output_scanline],
          dinfo.output_height-dinfo.output_scanline);
      }
+   } else {
+    coef_arrays = jpeg_read_coefficients(&dinfo); 
+   }
 
+  if (setjmp(jcerr.setjmp_buffer)) {
+      jpeg_abort_compress(&cinfo);
+      jpeg_abort_decompress(&dinfo);
+      printf(" [Compress ERROR]\n");
+      if (buf) {
+    for (j=0;j<dinfo.output_height;j++) free(buf[j]);
+    free(buf); buf=NULL;
+      }
+      outputsize = 0;
+      return;
+   }
+
+  if (quality>-1) {
     cinfo.in_color_space=dinfo.out_color_space;
     cinfo.input_components=dinfo.output_components;
     cinfo.image_width=dinfo.image_width;
@@ -158,7 +169,7 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
          dinfo.output_height);
     }
   } else {
-    coef_arrays = jpeg_read_coefficients(&dinfo);
+    
     jpeg_copy_critical_parameters(&dinfo, &cinfo);
     cinfo.optimize_coding = TRUE;
     jpeg_write_coefficients(&cinfo, coef_arrays);
