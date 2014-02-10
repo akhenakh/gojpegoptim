@@ -93,8 +93,6 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
 
   printf("Proc: Image is %d by %d with %d components target quality:%d\n", 
       dinfo.output_width, dinfo.output_height,  dinfo.output_components, quality);
- 
-  
 
   if (quality>-1 ) {
      jpeg_start_decompress(&dinfo);
@@ -158,6 +156,9 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
 
   jpeg_finish_compress(&cinfo);
   jpeg_finish_decompress(&dinfo);
+  jpeg_destroy_decompress(&dinfo);
+  jpeg_destroy_compress(&cinfo);
+  
   if (buf) {
     for (j=0;j<dinfo.output_height;j++) free(buf[j]);
     free(buf); buf=NULL;
