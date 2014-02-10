@@ -47,10 +47,6 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   struct jpeg_decompress_struct dinfo;
   struct jpeg_compress_struct cinfo;
   int j;
-  //jpeg_saved_marker_ptr exif_marker = NULL;
-  //jpeg_saved_marker_ptr iptc_marker = NULL;
-  //jpeg_saved_marker_ptr icc_marker = NULL;
-  //jpeg_saved_marker_ptr cmarker; 
   int all_normal = 1;
   int all_progressive = 0;
 
@@ -72,6 +68,7 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   /* setup error handling for decompress */
   if (setjmp(jderr.setjmp_buffer)) {
     jpeg_abort_decompress(&dinfo);
+    jpeg_destroy_decompress(&dinfo);
     if (buf) {
       for (j=0;j<dinfo.output_height;j++) free(buf[j]);
       free(buf); buf=NULL;
@@ -118,6 +115,8 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   if (setjmp(jcerr.setjmp_buffer)) {
       jpeg_abort_compress(&cinfo);
       jpeg_abort_decompress(&dinfo);
+      jpeg_destroy_decompress(&dinfo);
+      jpeg_destroy_compress(&cinfo);
       printf(" [Compress ERROR]\n");
       if (buf) {
     for (j=0;j<dinfo.output_height;j++) free(buf[j]);
@@ -158,7 +157,7 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   jpeg_finish_decompress(&dinfo);
   jpeg_destroy_decompress(&dinfo);
   jpeg_destroy_compress(&cinfo);
-  
+
   if (buf) {
     for (j=0;j<dinfo.output_height;j++) free(buf[j]);
     free(buf); buf=NULL;
