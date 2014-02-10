@@ -27,7 +27,7 @@ int main() {
   fread(jpg_inputbuffer, 1, fsize, fp);
   printf("input size: %lu\n", fsize);
   unsigned long ouputsize = 0;
-  optimizeJPEG(jpg_inputbuffer, fsize, &jpg_outputbuffer, &ouputsize, -1);
+  optimizeJPEG(jpg_inputbuffer, fsize, &jpg_outputbuffer, &ouputsize, 100);
  
   fclose(fp);
   printf("output size: %lu\n", ouputsize);

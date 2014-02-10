@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <setjmp.h>
-#import "jpeglib.h"
+#include "jpeglib.h"
 
 #define EXIF_JPEG_MARKER   JPEG_APP0+1
 #define EXIF_IDENT_STRING  "Exif\000\000"
@@ -47,10 +47,10 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   struct jpeg_decompress_struct dinfo;
   struct jpeg_compress_struct cinfo;
   int j;
-  jpeg_saved_marker_ptr exif_marker = NULL;
-  jpeg_saved_marker_ptr iptc_marker = NULL;
-  jpeg_saved_marker_ptr icc_marker = NULL;
-  jpeg_saved_marker_ptr cmarker; 
+  //jpeg_saved_marker_ptr exif_marker = NULL;
+  //jpeg_saved_marker_ptr iptc_marker = NULL;
+  //jpeg_saved_marker_ptr icc_marker = NULL;
+  //jpeg_saved_marker_ptr cmarker; 
   int all_normal = 1;
   int all_progressive = 0;
 
@@ -88,25 +88,6 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
     return;
   }
 
-  /* check for Exif/IPTC markers */
-  exif_marker=NULL;
-  iptc_marker=NULL;
-  icc_marker=NULL;
-  cmarker=dinfo.marker_list;
-  while (cmarker) {
-    if (cmarker->marker == EXIF_JPEG_MARKER) {
-      if (!memcmp(cmarker->data,EXIF_IDENT_STRING,EXIF_IDENT_STRING_SIZE)) 
-  exif_marker=cmarker;
-    }
-    if (cmarker->marker == IPTC_JPEG_MARKER) {
-      iptc_marker=cmarker;
-    }
-    if (cmarker->marker == ICC_JPEG_MARKER) {
-      if (!memcmp(cmarker->data,ICC_IDENT_STRING,ICC_IDENT_STRING_SIZE)) 
-  icc_marker=cmarker;
-    }
-    cmarker=cmarker->next;
-  }
 
   jpeg_mem_dest(&cinfo, outputbuffer, outputsize);
 
