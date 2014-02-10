@@ -8,11 +8,9 @@ Here is an alternative using all in memory structs.
 
 Roadmap
 =======
-* jpeg buffer to jpeg buffer (void optimizeJPEG())
-
 * RGB struct to jpegbuffer 
 
 Thanks
 ======
-Frank Denis
+Frank Denis  
 Dailymotion
