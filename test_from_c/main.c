@@ -40,4 +40,5 @@ int main() {
   fclose(fo);
   free(jpg_inputbuffer);
   free(jpg_outputbuffer);
+  return 0;
 }

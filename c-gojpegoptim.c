@@ -41,7 +41,7 @@ my_output_message (j_common_ptr cinfo)
 }
 
 // Take a buffer containing a jpeg and return an optimized jpeg
-void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned char **outputbuffer, unsigned long *outputsize, int quality) {
+int optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned char **outputbuffer, unsigned long *outputsize, int quality) {
   jvirt_barray_ptr *coef_arrays = NULL;
   JSAMPARRAY buf = NULL;
   struct jpeg_decompress_struct dinfo;
@@ -68,20 +68,23 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   /* setup error handling for decompress */
   if (setjmp(jderr.setjmp_buffer)) {
     jpeg_abort_decompress(&dinfo);
-    //jpeg_destroy_decompress(&dinfo);
+    jpeg_destroy_decompress(&dinfo);
+    jpeg_abort_compress(&cinfo);
+    jpeg_destroy_compress(&cinfo);
     if (buf) {
       for (j=0;j<dinfo.output_height;j++) free(buf[j]);
       free(buf); buf=NULL;
     }
     outputsize = 0;
     outputbuffer = NULL;
+    return 2;
    }
 
   /* prepare to decompress */  
   jpeg_mem_src(&dinfo, inputbuffer, inputsize);
 
   if (jpeg_read_header(&dinfo, TRUE) != JPEG_HEADER_OK) {
-    return;
+    return 2;
   }
 
 
@@ -95,12 +98,12 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
 
      buf = malloc(sizeof(JSAMPROW)*dinfo.output_height);
      if (!buf) {
-      return; 
+      return 2; 
      }
      for (j=0;j<dinfo.output_height;j++) {
        buf[j]=malloc(sizeof(JSAMPLE)*dinfo.output_width*
          dinfo.out_color_components);
-       if (!buf[j]) return;
+       if (!buf[j]) return 2;
      }
 
      while (dinfo.output_scanline < dinfo.output_height) {
@@ -120,6 +123,7 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
         free(buf); buf=NULL;
       }
       outputsize = 0;
+      return 2;
    }
 
   if (quality>-1) {
@@ -153,10 +157,5 @@ void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned 
   jpeg_finish_decompress(&dinfo);
   jpeg_destroy_decompress(&dinfo);
   jpeg_destroy_compress(&cinfo);
-
-  if (buf) {
-    for (j=0;j<dinfo.output_height;j++) free(buf[j]);
-    free(buf); buf=NULL;
-  }
+  return 0;
 }
-
