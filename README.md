@@ -11,3 +11,8 @@ Roadmap
 * jpeg buffer to jpeg buffer (void optimizeJPEG())
 
 * RGB struct to jpegbuffer 
+
+Thanks
+======
+Frank Denis
+Dailymotion

@@ -3,7 +3,7 @@ package gojpegoptim
 // #cgo CFLAGS: -I/opt/local/include
 // #cgo LDFLAGS: -L/opt/local/lib -ljpeg
 // #include <stdlib.h>
-// extern void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned char **outputbuffer, unsigned long *outputsize, int quality);
+// extern int optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned char **outputbuffer, unsigned long *outputsize, int quality);
 import "C"
 
 import (
@@ -20,9 +20,9 @@ func EncodeOptimized(srcBytes []byte, quality int) (outBytes []byte, err error) 
 	cinputsize := C.ulong(len(srcBytes))
 	var coutimg *C.uchar
 	var coutsize C.ulong
-	C.optimizeJPEG(csrcimg, cinputsize, &coutimg, &coutsize, C.int(quality))
-	if coutsize == 0 {
-		err = errors.New("Optimize failed output is 0")
+	code := C.optimizeJPEG(csrcimg, cinputsize, &coutimg, &coutsize, C.int(quality))
+	if code != 0 || coutsize == 0 {
+		err = errors.New("Optimize failed")
 		return
 	}
 	outBytes = C.GoBytes(unsafe.Pointer(coutimg), C.int(coutsize))
