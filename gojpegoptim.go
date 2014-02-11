@@ -11,7 +11,8 @@ import (
 	"unsafe"
 )
 
-func EncodeOptimized(srcBytes []byte, quality int) (outBytes []byte, err error) {
+// Optimize a JPEG bytes array, Recompress it if quality is between 0 - 100
+func EncodeBytesOptimized(srcBytes []byte, quality int) (outBytes []byte, err error) {
 	if len(srcBytes) == 0 {
 		err = errors.New("Image source is empty")
 		return

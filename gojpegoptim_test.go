@@ -12,7 +12,7 @@ func TestJpegOptimFromBuffer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	imgBytes, err := EncodeOptimized(fi, 100)
+	imgBytes, err := EncodeBytesOptimized(fi, 100)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,5 +33,4 @@ func TestJpegOptimBadBuffer(t *testing.T) {
 	if err == nil {
 		t.Fatal("Should be detected as an error")
 	}
-
 }
