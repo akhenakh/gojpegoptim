@@ -8,11 +8,12 @@ import (
 )
 
 func TestJpegOptimFromBuffer(t *testing.T) {
+
 	fi, err := ioutil.ReadFile("test.jpg")
 	if err != nil {
 		t.Fatal(err)
 	}
-	imgBytes, err := EncodeBytesOptimized(fi, 100)
+	imgBytes, err := EncodeBytesOptimized(fi, &Options{100})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +30,7 @@ func TestJpegOptimFromBuffer(t *testing.T) {
 
 func TestJpegOptimBadBuffer(t *testing.T) {
 	b := []byte{'g', 'o', 'l', 'a', 'n', 'g'}
-	_, err := EncodeOptimized(b, 100)
+	_, err := EncodeBytesOptimized(b, &Options{100})
 	if err == nil {
 		t.Fatal("Should be detected as an error")
 	}
