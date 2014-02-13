@@ -12,7 +12,6 @@ import (
 	"image"
 	"image/draw"
 	"io"
-	"log"
 	"unsafe"
 )
 
@@ -32,14 +31,16 @@ func Encode(w io.Writer, m image.Image, o *Options) error {
 		draw.Draw(tm, b, m, b.Min, draw.Src)
 		m = tm
 	}
-	log.Fatal(rgba.Pix)
 	var coutimg *C.uchar
 	var coutsize C.ulong
 	input := (*C.uchar)(unsafe.Pointer(&rgba.Pix[0]))
 	code := C.encodeJPEG(input, C.int(m.Bounds().Size().X), C.int(m.Bounds().Size().Y), &coutimg, &coutsize, C.int(o.Quality))
-	if code != 0 {
+	if code != 0 || coutsize == 0 {
 		return errors.New("Encoding error")
 	}
+	outBytes := C.GoBytes(unsafe.Pointer(coutimg), C.int(coutsize))
+	w.Write(outBytes)
+	C.free(unsafe.Pointer(coutimg))
 	return nil
 }
 

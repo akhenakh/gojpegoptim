@@ -1,11 +1,13 @@
 package gojpegoptim
 
 import (
+	"bufio"
 	"bytes"
 	"image"
 	"image/color"
 	"image/jpeg"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -46,4 +48,17 @@ func TestEncodeImageWithJpegOptim(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(w.Bytes()) == 0 {
+		t.Fatal("error encoding, size is too small")
+	}
+	// open output file
+	fo, err := os.Create("outputcomp.jpg")
+	if err != nil {
+		panic(err)
+	}
+	defer fo.Close()
+
+	wo := bufio.NewWriter(fo)
+	wo.Write(w.Bytes())
+
 }

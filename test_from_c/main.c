@@ -5,11 +5,12 @@
 #include <stdlib.h>
 
 extern void optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned char **outputbuffer, unsigned long *outputsize, int quality);
+extern int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char **outputbuffer, unsigned long *outputsize, int quality);
 
 int main() {
  
   FILE *fp;
-  fp = fopen("test.jpg","r"); // read mode
+  fp = fopen("test.jpg","r"); 
   if (fp == NULL)  {
     printf("fuck\n");
     exit(0);
@@ -40,5 +41,24 @@ int main() {
   fclose(fo);
   free(jpg_inputbuffer);
   free(jpg_outputbuffer);
+
+  unsigned char* outputbuffer;
+  unsigned long osize = 0;
+  unsigned char* inputbuffer = malloc(sizeof(unsigned char)*300*300*4);
+  unsigned char* p = inputbuffer;
+  p[8] = 8; 
+
+  int code = encodeJPEG(inputbuffer, 300, 300, &outputbuffer, &osize, 100);
+  if (code !=0 || osize == 0) {
+    printf("Error encoding\n");
+    return 2;
+  }
+  printf("input size uncompressed %lu compressed %lu\n", sizeof(unsigned char)*300*300*4, osize);
+  fo = fopen("testout.jpg","w");
+  fwrite(outputbuffer, 1, osize, fo);
+  fflush(fo);
+  fclose(fo);
+  free(inputbuffer);
+  free(outputbuffer);
   return 0;
 }

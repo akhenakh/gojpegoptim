@@ -44,8 +44,8 @@ my_output_message (j_common_ptr cinfo)
 int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char **outputbuffer, unsigned long *outputsize, int quality) {
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr       jerr;
-  JSAMPROW row_pointer;          /* pointer to a single row */
-  char *compressed_buffer;
+  JSAMPROW row_pointer[1];
+
   unsigned char *buf;
   if (quality > 100)
     quality = 100;
@@ -75,8 +75,8 @@ int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char 
   jpeg_start_compress(&cinfo, TRUE);
 
   while (cinfo.next_scanline < cinfo.image_height) {
-    row_pointer = (JSAMPROW) &compressed_buffer[cinfo.next_scanline*width];
-    jpeg_write_scanlines(&cinfo, &row_pointer, 1);
+    row_pointer[0] = (JSAMPROW) &buf[cinfo.next_scanline];
+    jpeg_write_scanlines(&cinfo, row_pointer, 1);
   }
 
   free(buf);
