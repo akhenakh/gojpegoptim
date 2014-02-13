@@ -4,10 +4,15 @@ package gojpegoptim
 // #cgo LDFLAGS: -L/opt/local/lib -ljpeg
 // #include <stdlib.h>
 // extern int optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned char **outputbuffer, unsigned long *outputsize, int quality);
+// extern int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char **outputbuffer, unsigned long *outputsize, int quality);
 import "C"
 
 import (
 	"errors"
+	"image"
+	"image/draw"
+	"io"
+	"log"
 	"unsafe"
 )
 
@@ -15,6 +20,27 @@ import (
 // Quality ranges from -1 to 100 inclusive, higher is better.
 type Options struct {
 	Quality int
+}
+
+// Encode writes the Image m to w in JPEG format with the given options.
+func Encode(w io.Writer, m image.Image, o *Options) error {
+	// Get an image.RGBA if it is one
+	rgba, ok := m.(*image.RGBA)
+	if !ok {
+		b := m.Bounds()
+		tm := image.NewRGBA(b)
+		draw.Draw(tm, b, m, b.Min, draw.Src)
+		m = tm
+	}
+	log.Fatal(rgba.Pix)
+	var coutimg *C.uchar
+	var coutsize C.ulong
+	input := (*C.uchar)(unsafe.Pointer(&rgba.Pix[0]))
+	code := C.encodeJPEG(input, C.int(m.Bounds().Size().X), C.int(m.Bounds().Size().Y), &coutimg, &coutsize, C.int(o.Quality))
+	if code != 0 {
+		return errors.New("Encoding error")
+	}
+	return nil
 }
 
 // Optimize a JPEG bytes array if quality is -1, Optimize & Recompress if quality is between [0 - 100]

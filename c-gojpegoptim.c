@@ -40,6 +40,52 @@ my_output_message (j_common_ptr cinfo)
   printf("ici (%s) ",buffer);
 }
 
+// Take a buffer in RGBA format, has to skip 4th uchar
+int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char **outputbuffer, unsigned long *outputsize, int quality) {
+  struct jpeg_compress_struct cinfo;
+  struct jpeg_error_mgr       jerr;
+  JSAMPROW row_pointer;          /* pointer to a single row */
+  char *compressed_buffer;
+  unsigned char *buf;
+  if (quality > 100)
+    quality = 100;
+
+  // convert RGBA to RGB
+  buf = malloc(sizeof(unsigned char)*width*height*3);
+  size_t i;
+  for (i=0;i<width*height*3;i+=4) {
+    buf[i] = inputbuffer[i];  
+    buf[i+1] = inputbuffer[i+1];
+    buf[i+2] = inputbuffer[i+2];
+  }
+
+  cinfo.err = jpeg_std_error(&jerr);
+  jpeg_create_compress(&cinfo);
+  jpeg_mem_dest(&cinfo, outputbuffer, outputsize);
+  
+  cinfo.image_width      = width;
+  cinfo.image_height     = height;
+  cinfo.input_components = 3;
+  cinfo.in_color_space   = JCS_RGB;
+  jpeg_set_defaults(&cinfo); 
+  jpeg_set_quality(&cinfo,quality,TRUE);
+  jpeg_simple_progression(&cinfo);
+  cinfo.optimize_coding = TRUE;
+
+  jpeg_start_compress(&cinfo, TRUE);
+
+  while (cinfo.next_scanline < cinfo.image_height) {
+    row_pointer = (JSAMPROW) &compressed_buffer[cinfo.next_scanline*width];
+    jpeg_write_scanlines(&cinfo, &row_pointer, 1);
+  }
+
+  free(buf);
+  jpeg_finish_compress(&cinfo);
+  jpeg_destroy_compress(&cinfo);
+
+  return 0;
+}
+
 // Take a buffer containing a jpeg and return an optimized jpeg
 int optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned char **outputbuffer, unsigned long *outputsize, int quality) {
   jvirt_barray_ptr *coef_arrays = NULL;

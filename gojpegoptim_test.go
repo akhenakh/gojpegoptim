@@ -2,6 +2,8 @@ package gojpegoptim
 
 import (
 	"bytes"
+	"image"
+	"image/color"
 	"image/jpeg"
 	"io/ioutil"
 	"testing"
@@ -33,5 +35,15 @@ func TestJpegOptimBadBuffer(t *testing.T) {
 	_, err := EncodeBytesOptimized(b, &Options{100})
 	if err == nil {
 		t.Fatal("Should be detected as an error")
+	}
+}
+
+func TestEncodeImageWithJpegOptim(t *testing.T) {
+	m := image.NewRGBA(image.Rect(0, 0, 30, 30))
+	m.Set(5, 5, color.RGBA{255, 0, 0, 255})
+	w := new(bytes.Buffer)
+	err := Encode(w, m, &Options{100})
+	if err != nil {
+		t.Fatal(err)
 	}
 }
