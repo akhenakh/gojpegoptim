@@ -56,7 +56,7 @@ int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char 
   for(i=0;i<width*height; i++) {
       if (i % 4 == 0)
         continue;
-      *p = buf[i];
+      *p = inputbuffer[i];
       p++;
   }
 
