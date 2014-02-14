@@ -45,7 +45,6 @@ int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char 
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr       jerr;
   JSAMPROW row_pointer[1];
-
   unsigned char *buf;
   if (quality > 100)
     quality = 100;
@@ -53,20 +52,22 @@ int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char 
   // convert RGBA to RGB
   buf = malloc(sizeof(unsigned char)*width*height*3);
   size_t i;
-  for (i=0;i<width*height*3;i+=4) {
-    buf[i] = inputbuffer[i];  
-    buf[i+1] = inputbuffer[i+1];
-    buf[i+2] = inputbuffer[i+2];
+  unsigned char* p = buf;
+  for(i=0;i<width*height; i++) {
+      if (i % 4 == 0)
+        continue;
+      *p = buf[i];
+      p++;
   }
 
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_compress(&cinfo);
   jpeg_mem_dest(&cinfo, outputbuffer, outputsize);
-  
   cinfo.image_width      = width;
   cinfo.image_height     = height;
   cinfo.input_components = 3;
   cinfo.in_color_space   = JCS_RGB;
+
   jpeg_set_defaults(&cinfo); 
   jpeg_set_quality(&cinfo,quality,TRUE);
   jpeg_simple_progression(&cinfo);
@@ -75,8 +76,8 @@ int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char 
   jpeg_start_compress(&cinfo, TRUE);
 
   while (cinfo.next_scanline < cinfo.image_height) {
-    row_pointer[0] = (JSAMPROW) &buf[cinfo.next_scanline];
-    jpeg_write_scanlines(&cinfo, row_pointer, 1);
+      row_pointer[0] = &buf[cinfo.next_scanline *  width * 3];
+      jpeg_write_scanlines(&cinfo, row_pointer, 1);
   }
 
   free(buf);
@@ -124,7 +125,7 @@ int optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned c
     outputsize = 0;
     outputbuffer = NULL;
     return 2;
-   }
+  }
 
   /* prepare to decompress */  
   jpeg_mem_src(&dinfo, inputbuffer, inputsize);
@@ -132,7 +133,6 @@ int optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned c
   if (jpeg_read_header(&dinfo, TRUE) != JPEG_HEADER_OK) {
     return 2;
   }
-
 
   jpeg_mem_dest(&cinfo, outputbuffer, outputsize);
 
@@ -186,7 +186,6 @@ int optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned c
     j=0;
     jpeg_start_compress(&cinfo,TRUE);
      
-    
     /* write image */
     while (cinfo.next_scanline < cinfo.image_height) {
       jpeg_write_scanlines(&cinfo,&buf[cinfo.next_scanline],
