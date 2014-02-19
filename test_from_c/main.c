@@ -45,7 +45,19 @@ int main() {
   unsigned long osize = 0;
   unsigned char* inputbuffer = malloc(sizeof(unsigned char)*8*8*4);
   unsigned char* p = inputbuffer;
-  p[8] = 8; 
+  p[2] = 255; 
+  p[6] = 255; 
+  p[10] = 255; 
+  p[10] = 255; 
+  p[14] = 255; 
+  p[18] = 255; 
+  p[22] = 255; 
+  p[26] = 255; 
+  p[30] = 255; 
+
+  p[120] = 255;
+  p[121] = 255;
+
 
   int code = encodeJPEG(inputbuffer, 8, 8, &outputbuffer, &osize, 100);
   if (code !=0 || osize == 0) {

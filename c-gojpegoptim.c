@@ -37,7 +37,6 @@ my_output_message (j_common_ptr cinfo)
   char buffer[JMSG_LENGTH_MAX];
 
   (*cinfo->err->format_message) (cinfo, buffer); 
-  printf("ici (%s) ",buffer);
 }
 
 // Take a buffer in RGBA format, has to skip 4th uchar
@@ -53,7 +52,7 @@ int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char 
   buf = malloc(sizeof(unsigned char)*width*height*3);
   size_t i;
   unsigned char* p = buf;
-  for(i=0;i<width*height; i++) {
+  for(i=0;i<width*height*4; i++) {
       if (i % 4 == 0)
         continue;
       *p = inputbuffer[i];

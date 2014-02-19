@@ -1,7 +1,6 @@
 package gojpegoptim
 
 import (
-	"bufio"
 	"bytes"
 	"image"
 	"image/color"
@@ -42,23 +41,24 @@ func TestJpegOptimBadBuffer(t *testing.T) {
 
 func TestEncodeImageWithJpegOptim(t *testing.T) {
 	m := image.NewRGBA(image.Rect(0, 0, 30, 30))
-	m.Set(5, 5, color.RGBA{255, 0, 0, 255})
+	m.Set(5, 5, color.RGBA{255, 255, 255, 0})
 	w := new(bytes.Buffer)
 	err := Encode(w, m, &Options{100})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(w.Bytes()) == 0 {
+	b := w.Bytes()
+	if len(b) == 0 {
 		t.Fatal("error encoding, size is too small")
 	}
+	t.Log("output size", len(b), "image 30x30")
 	// open output file
 	fo, err := os.Create("outputcomp.jpg")
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	defer fo.Close()
 
-	wo := bufio.NewWriter(fo)
-	wo.Write(w.Bytes())
+	fo.Write(b)
 
 }
