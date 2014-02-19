@@ -1,7 +1,7 @@
 package gojpegoptim
 
-// #cgo CFLAGS: -I/opt/local/include
-// #cgo LDFLAGS: -L/opt/local/lib -ljpeg
+// #cgo CFLAGS: -I/opt/local/include -I/usr/local/include
+// #cgo LDFLAGS: -L/opt/local/lib -L/usr/local/lib -ljpeg
 // #include <stdlib.h>
 // extern int optimizeJPEG(unsigned char *inputbuffer, unsigned long inputsize, unsigned char **outputbuffer, unsigned long *outputsize, int quality);
 // extern int encodeJPEG(unsigned char *inputbuffer, int width, int height, unsigned char **outputbuffer, unsigned long *outputsize, int quality);
