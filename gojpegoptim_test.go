@@ -11,7 +11,6 @@ import (
 )
 
 func TestJpegOptimFromBuffer(t *testing.T) {
-
 	fi, err := ioutil.ReadFile("test.jpg")
 	if err != nil {
 		t.Fatal(err)
@@ -60,5 +59,16 @@ func TestEncodeImageWithJpegOptim(t *testing.T) {
 	defer fo.Close()
 
 	fo.Write(b)
+}
 
+func BenchmarkOptimize(b *testing.B) {
+	m := image.NewRGBA(image.Rect(0, 0, 30, 30))
+	m.Set(5, 5, color.RGBA{255, 255, 255, 0})
+	w := new(bytes.Buffer)
+	for i := 0; i < b.N; i++ {
+		err := Encode(w, m, &Options{100})
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
 }
